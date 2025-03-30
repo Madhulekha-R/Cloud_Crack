@@ -3,11 +3,9 @@ body {
     text-align: center;
     margin: 50px;
 }
-
 h1 {
     color: #333;
 }
-
 a {
     text-decoration: none;
     margin: 10px;
@@ -16,18 +14,15 @@ a {
     color: white;
     border-radius: 5px;
 }
-
 .password-field {
     position: relative;
     width: 100%;
 }
-
 .password-field input {
     width: 100%;
     padding-right: 40px; 
     box-sizing: border-box;
 }
-
 .password-toggle {
     position: absolute;
     right: 10px;
@@ -42,7 +37,6 @@ a {
     z-index: 10;
     transform: translateY(-50%);
 }
-
 .password-toggle i {
     font-size: 16px; 
     pointer-events: none; 

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - User Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #34495e, #2ecc71);
+            min-height: 100vh;
+            color: white;
+            display: flex; 
+            flex-direction: column; 
+        }
+        .dashboard-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            text-align: center; 
+        }
+        .recent-attempts-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+        }
+        .search-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .user-icon {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            cursor: pointer;
+        }
+        .user-icon img {
+            width: 40px;
+            border-radius: 50%;
+        }
+        .browse-subjects-container {
+            text-align: center; 
+            margin-top: 10px; 
+        }
+        .full-width-button {
+            display: block; 
+            width: 100%;    
+            text-align: center; 
+            padding: 86px; 
+            background-color: #ffcc00; 
+            color: #34495e; 
+            font-size: 1.5em; 
+            border-radius: 10px; 
+            transition: background-color 0.3s ease; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container position-relative">
+            <div class="user-icon" onclick="window.location.href='/user/profile'">
+                <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="User Profile">
+            </div>
+            <h1 class="text-center mb-3">Welcome, {{ username }}!</h1>
+            <p class="text-center mb-4">"The only way to do great work is to love what you do." - Steve Jobs</p>
+            <div class="search-container">
+                <form action="/search" method="GET">
+                    <div class="input-group">
+                        <input type="text" class="form-control me-2" placeholder="Search for subjects, chapters, or quizzes" name="query" required>
+                        <button class="btn btn-warning" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card stats-card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-center mb-3">Performance Statistics</h5>
+                            <div style="text-align: center;">
+                                <p>Total Quizzes Attempted: <strong>{{ total_quizzes }}</strong></p>
+                                <p>Average Score: <strong>{{ avg_score }}%</strong></p>
+                                <p>Top Score: <strong>{{ max_score }}%</strong></p>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class="browse-subjects-container">
+                        <a href="/subjects" class="btn btn-lg btn-warning full-width-button">Let's Begin the Quest!</a>
+                    </div>                    
+                </div>
+                <div class="col-md-8">
+                    <div class="card stats-card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Performance Graph</h5>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card recent-attempts-card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Quiz Attempts (Highest Score)</h5>
+                    <table class="table text-white">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Chapter</th>
+                                <th>Date</th>
+                                <th>Score</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in recent_attempts %}
+                            <tr>
+                                <td>{{ attempt[1] }}</td>
+                                <td>{{ attempt[2] }}</td>
+                                <td>{{ attempt[3] }}</td>
+                                <td>{{ attempt[4] }}</td>
+                                <td>
+                                    <a href="/take_quiz/{{ attempt[0] }}" class="btn btn-sm btn-warning">Retake Quiz</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const chartDataJson = JSON.parse('{{ chart_data_json | safe }}'); 
+            const quizDates = chartDataJson.quizDates;
+            const quizScores = chartDataJson.quizScores;
+            const performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {labels: quizDates, datasets: [{label: 'Quiz Performance', data: quizScores, fill: false, borderColor: 'rgb(75, 192, 192)', tension: 0.1}]},
+                options: {
+                    scales: {
+                        y: {beginAtZero: true, title: {display: true, text: 'Score (%)', color: 'white'}, ticks: {color: 'white'}, grid: {color: 'rgba(255, 255, 255, 0.1)'}},
+                        x: {ticks: {color: 'white'}, grid: {color: 'rgba(255, 255, 255, 0.1)'}}
+                    },
+                    plugins: {legend: {labels: {color: 'white'}}
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

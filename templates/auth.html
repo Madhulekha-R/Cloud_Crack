@@ -82,7 +82,6 @@
                 <button class="tab-btn active" onclick="showForm('login')">Login</button>
                 <button class="tab-btn" onclick="showForm('register')">Register</button>
             </div>
-
             <form id="login-form" class="auth-form active" onsubmit="return validateLogin()">
                 <h2 class="text-center mb-4">Login</h2>
                 <div class="mb-3">
@@ -93,15 +92,12 @@
                 <div class="mb-3 password-field">
                     <label for="login-password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="login-password" name="password" required>
-                    <span class="password-toggle" onclick="togglePassword('login-password')">
-                        <i class="fas fa-eye" id="login-password-eye"></i>
-                    </span>
+                    <span class="password-toggle" onclick="togglePassword('login-password')"><i class="fas fa-eye" id="login-password-eye"></i></span>
                     <div class="form-error" id="login-password-error"></div>
                 </div>
                 <div class="form-error mb-3" id="login-error"></div>
                 <button type="submit" class="btn btn-warning btn-custom">Login</button>
             </form>
-
             <form id="register-form" class="auth-form" onsubmit="return validateRegister()">
                 <h2 class="text-center mb-4">Register</h2>
                 <div class="mb-3">
@@ -109,12 +105,10 @@
                     <input type="text" class="form-control" id="register-username" name="username" required>
                     <div class="form-error" id="register-username-error"></div>
                 </div>
-                <div class="mb-3 password-field" style="position: relative; display: flex; align-items: center;">
+                <div class="mb-3 password-field">
                     <label for="register-password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="register-password" name="password" required>
-                    <span class="password-toggle" onclick="togglePassword('register-password')">
-                        <i class="fas fa-eye" id="register-password-eye"></i>
-                    </span>
+                    <span class="password-toggle" onclick="togglePassword('register-password')"><i class="fas fa-eye" id="register-password-eye"></i></span>
                     <div class="form-error" id="register-password-error"></div>
                 </div>
                 <div class="form-error mb-3" id="register-error"></div>
@@ -126,27 +120,18 @@
     <script>
         function showForm(formType) {  
             document.querySelectorAll('.auth-form').forEach(form => {
-                form.classList.remove('active');
-            });
-
+                form.classList.remove('active');});
             document.getElementById(formType + '-form').classList.add('active');
-
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
+                btn.classList.remove('active');});
             event.target.classList.add('active');
-
             document.querySelectorAll('.form-error').forEach(error => {
                 error.style.display = 'none';
-                error.textContent = '';
-            });
+                error.textContent = '';});
         }
-        
         function togglePassword(inputId) {
             const passwordInput = document.getElementById(inputId);
             const eyeIcon = document.getElementById(inputId + '-eye');
-            
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeIcon.classList.remove('fa-eye');
@@ -157,78 +142,52 @@
                 eyeIcon.classList.add('fa-eye');
             }
         }
-        
         function validateLogin() {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
-
             document.querySelectorAll('#login-form .form-error').forEach(error => {
                 error.style.display = 'none';
                 error.textContent = '';
             });
-
-            fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
-            })
+            fetch('/login', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded',},body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`})
             .then(response => {
                 if (response.redirected) {
                     window.location.href = response.url;
                 } else {
                     return response.text();
-                }
-            })
+                }})
             .then(data => {
                 if (data && data.includes("Invalid credentials")) {
                     const errorMsg = document.getElementById('login-error');
                     errorMsg.textContent = "Invalid username or password";
                     errorMsg.style.display = 'block';
-                }
-            })
+                }})
             .catch(error => {
-                console.error('Error:', error);
-            });
-            
+                console.error('Error:', error);});
             return false; 
         }
-        
         function validateRegister() {
             const username = document.getElementById('register-username').value;
             const password = document.getElementById('register-password').value;
-
             document.querySelectorAll('#register-form .form-error').forEach(error => {
                 error.style.display = 'none';
                 error.textContent = '';
             });
-
-            fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
-            })
+            fetch('/register', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded',}, body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`})
             .then(response => {
                 if (response.redirected) {
                     window.location.href = response.url;
                 } else {
                     return response.text();
-                }
-            })
+                }})
             .then(data => {
                 if (data && data.includes("User already exists")) {
                     const errorMsg = document.getElementById('register-error');
                     errorMsg.textContent = "Username already taken. Please choose another.";
                     errorMsg.style.display = 'block';
-                }
-            })
+                }})
             .catch(error => {
-                console.error('Error:', error);
-            });
-            
+                console.error('Error:', error);});
             return false; 
         }
     </script>
