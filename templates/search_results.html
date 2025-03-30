@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Search Results</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #34495e, #2ecc71);
+            min-height: 100vh;
+            color: white;
+        }
+        .search-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 50px;
+        }
+        .result-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            margin-bottom: 15px;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .result-card:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <h2 class="text-center mb-4">Search Results for "{{ query }}"</h2>
+            {% if results %}
+                <div class="row">
+                    {% for result in results %}
+                    <div class="col-md-4">
+                        <div class="card result-card" 
+                             onclick="navigateToResult('{{ result[0] }}', '{{ result[1] }}')">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ result[2] }}</h5>
+                                <p class="card-text">Type: {{ result[0] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center">No results found.</p>
+            {% endif %}
+            <div class="text-center mt-4">
+                <a href="/user_dashboard" class="btn btn-warning">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function navigateToResult(type, id) {
+            switch(type) {
+                case 'subject':
+                    window.location.href = `/chapters/${id}`;
+                    break;
+                case 'chapter':
+                    window.location.href = `/quizzes/${id}`;
+                    break;
+                case 'quiz':
+                    window.location.href = `/take_quiz/${id}`;
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
