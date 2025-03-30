@@ -178,7 +178,7 @@ def submit_quiz(quiz_id):
     try:
         conn = sqlite3.connect('quiz_master.db')
         cursor = conn.cursor()
-        cursor.execute("""SELECT id, question_statement, option1, option2, option3, option4, correct_option FROM questionsWHERE quiz_id = ?""", (quiz_id,))
+        cursor.execute("""SELECT id, question_statement, option1, option2, option3, option4, correct_option FROM questions WHERE quiz_id = ?""", (quiz_id,))
         questions = cursor.fetchall()
         user_answers = request.form
         score = 0
@@ -209,7 +209,7 @@ def submit_quiz(quiz_id):
         percentage_score = round((score / total_questions) * 100, 2) if total_questions > 0 else 0
 
         cursor.execute("""INSERT OR REPLACE INTO scores (user_id, quiz_id, total_scored)VALUES (?, ?, ?)""", (session['user_id'], quiz_id, percentage_score))
-        cursor.execute("""DELETE FROM user_quiz_answersWHERE quiz_id = ? AND user_id = ?""", (quiz_id, session['user_id']))
+        cursor.execute("""DELETE FROM user_quiz_answers WHERE quiz_id = ? AND user_id = ?""", (quiz_id, session['user_id']))
         try:
             cursor.executemany("""INSERT INTO user_quiz_answers (quiz_id, user_id, question_id, user_answer, is_correct) VALUES (?, ?, ?, ?, ?)""", [(quiz_id, session['user_id'], q_id, str(u_answer), is_corr) for quiz_id, session['user_id'], q_id, u_answer, is_corr in user_quiz_answers])
             conn.commit()
