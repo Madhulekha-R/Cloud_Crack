@@ -1,1 +1,8 @@
+# Bytecode cache
+__pycache__/
+
+# Database file
 quiz_master.db
+
+# Project report PDF
+*.pdf

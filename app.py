@@ -105,16 +105,16 @@ def user_dashboard():
 
 @app.route('/search', methods=['GET'])
 def search():
-    if 'user' not in session:
+    if 'user' not in session and 'admin' not in session:
         return redirect(url_for('login'))
     query = request.args.get('query', '').strip()
     conn = sqlite3.connect('quiz_master.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT 'subject' as type, id, name FROM subjects WHERE name LIKE ? UNION SELECT 'chapter' as type, id, name FROM chapters WHERE name LIKE ? UNION SELECT 'quiz' as type, id, date_of_quiz FROM quizzes WHERE id LIKE ?
+    cursor.execute("""SELECT 'subject' as type, id, name FROM subjects WHERE name LIKE ? UNION SELECT 'chapter' as type, id, name FROM chapters WHERE name LIKE ? UNION SELECT 'quiz' as type, id, date_of_quiz FROM quizzes WHERE CAST(id as TEXT) LIKE ?
     """, (f'%{query}%', f'%{query}%', f'%{query}%'))
     results = cursor.fetchall()
     conn.close()
-    return render_template('search_results.html', results=results, query=query)
+    return render_template('search_results.html', results=results, query=query, is_admin='admin' in session)
 
 @app.route('/subjects')
 def view_subjects():
