@@ -1,14 +1,15 @@
-# Bytecode cache
+# Python bytecode
 __pycache__/
 
-# Database file
-quiz_master.db
+# SQLite database
+*.db
 
-# Project report PDF
+# Project documentation
 *.pdf
 
-#database file
+# Ignore backend and model directories (if not meant to be pushed)
 models/
+controllers/
 
-#backend files
-/backend/
+# Environment and config
+.env
