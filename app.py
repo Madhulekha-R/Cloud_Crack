@@ -1,14 +1,28 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sqlite3
+import os
+import uuid
+from werkzeug.utils import secure_filename
 from models.database import init_db
 from controllers.admin import admin_bp
 from controllers.user import user_bp
+from controllers.contact import contact_bp
 import json
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here_change_in_production"
+app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(user_bp, url_prefix='/user')
+app.register_blueprint(contact_bp)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 init_db()
 
@@ -56,6 +70,7 @@ def login():
         if user:
             session['user'] = username
             session['user_id'] = user[0]
+            session['profile_pic'] = user[6]  
             conn.close()
             return redirect(url_for('user_dashboard'))
         conn.close()
@@ -80,32 +95,57 @@ def user_dashboard():
     user_id = session['user_id']
     conn = sqlite3.connect('quiz_master.db')
     cursor = conn.cursor()
+    cursor.execute("SELECT profile_pic FROM users WHERE id=?", (user_id,))
+    result = cursor.fetchone()
+    profile_pic = result[0] if result and result[0] else None 
     try:
-        cursor.execute("""SELECT COUNT(DISTINCT quiz_id) FROM scores WHERE user_id = ?""", (user_id,))
+        cursor.execute("SELECT COUNT(DISTINCT quiz_id) FROM scores WHERE user_id = ?", (user_id,))
         total_quizzes = cursor.fetchone()[0] or 0
-        cursor.execute("""SELECT ROUND(AVG(total_scored), 2), MAX(total_scored) FROM scores WHERE user_id = ?""", (user_id,))
-        avg_score, max_score = cursor.fetchone()
-        avg_score = avg_score or 0
-        max_score = max_score or 0
-        cursor.execute("""SELECT q.id, s.name AS subject_name, ch.name AS chapter_name, q.date_of_quiz, MAX(sc.total_scored) FROM scores sc JOIN quizzes q ON sc.quiz_id = q.id JOIN chapters ch ON q.chapter_id = ch.id
-            JOIN subjects s ON ch.subject_id = s.id WHERE sc.user_id = ? GROUP BY q.id, s.name, ch.name, q.date_of_quiz ORDER BY MAX(sc.total_scored) DESC LIMIT 5""", (user_id,))
+        cursor.execute("SELECT ROUND(AVG(total_scored), 2), MAX(total_scored) FROM scores WHERE user_id = ?", (user_id,))
+        score_result = cursor.fetchone()
+        avg_score = score_result[0] if score_result and score_result[0] else 0
+        max_score = score_result[1] if score_result and score_result[1] else 0
+        cursor.execute("""SELECT q.id, s.name, ch.name, q.date_of_quiz, MAX(sc.total_scored) FROM scores sc JOIN quizzes q ON sc.quiz_id = q.id JOIN chapters ch ON q.chapter_id = ch.id JOIN subjects s ON ch.subject_id = s.id 
+            WHERE sc.user_id = ? GROUP BY q.id ORDER BY MAX(sc.total_scored) DESC LIMIT 5""", (user_id,))
         recent_attempts = cursor.fetchall()
-        chart_data = {'quizDates': [attempt[3] for attempt in recent_attempts],'quizScores': [attempt[4] for attempt in recent_attempts]}
-        chart_data_json = json.dumps(chart_data)
+        chart_data = {
+            'quizDates': [attempt[3] for attempt in recent_attempts],
+            'quizScores': [attempt[4] for attempt in recent_attempts]
+        }
+        chart_data_json = json.dumps(chart_data)        
     except Exception as e:
         print(f"Database error: {e}")
         total_quizzes = 0
         avg_score = 0
         max_score = 0
         recent_attempts = []
-        chart_data_json = json.dumps({'quizDates': [], 'quizScores': []})  
+        chart_data_json = json.dumps({'quizDates': [], 'quizScores': []})        
     finally:
+        conn.close()    
+    return render_template('user_dashboard.html', username=session['user'], total_quizzes=total_quizzes, avg_score=avg_score, max_score=max_score, recent_attempts=recent_attempts, chart_data_json=chart_data_json, profile_pic=profile_pic, now=int(datetime.utcnow().timestamp()))
+
+@app.route('/user/update_profile', methods=['POST'])
+def update_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    profile_pic = request.files.get('profile_pic')
+    if profile_pic and allowed_file(profile_pic.filename):
+        filename = secure_filename(profile_pic.filename)
+        unique_name = f"{uuid.uuid4().hex}_{filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+        profile_pic.save(filepath)
+        conn = sqlite3.connect('quiz_master.db')
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET profile_pic=? WHERE id=?", (unique_name, user_id))
+        conn.commit()
         conn.close()
-    return render_template('user_dashboard.html', username=session['user'], total_quizzes=total_quizzes, avg_score=avg_score, max_score=max_score, recent_attempts=recent_attempts, chart_data_json=chart_data_json) 
+        session['profile_pic'] = unique_name  
+    return redirect(url_for('user_dashboard'))
 
 @app.route('/search', methods=['GET'])
 def search():
-    if 'user' not in session and 'admin' not in session:
+    if 'user' not in session:
         return redirect(url_for('login'))
     query = request.args.get('query', '').strip()
     conn = sqlite3.connect('quiz_master.db')
@@ -114,7 +154,7 @@ def search():
     """, (f'%{query}%', f'%{query}%', f'%{query}%'))
     results = cursor.fetchall()
     conn.close()
-    return render_template('search_results.html', results=results, query=query, is_admin='admin' in session)
+    return render_template('search_results.html', results=results, query=query)
 
 @app.route('/subjects')
 def view_subjects():
@@ -252,6 +292,15 @@ def add_question():
         if conn:
             conn.close()
     return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/users')
+def get_users():
+    conn = sqlite3.connect('quiz_master.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM users")
+    users = [{"username": row[0]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify({"users": users})
 
 if __name__ == '__main__':
     app.run(debug=True)

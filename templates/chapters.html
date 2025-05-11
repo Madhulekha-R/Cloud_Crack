@@ -1,61 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Chapters</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body {
-            background: linear-gradient(to right, #34495e, #2ecc71);
-            min-height: 100vh;
-            color: white;
-        }
-        .chapters-container {
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 50px;
-        }
-        .chapter-card {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-            margin-bottom: 15px;
-            transition: transform 0.3s;
-        }
-        .chapter-card:hover {
-            transform: scale(1.05);
-        }
-        .chapter-card .card-body {
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Concepts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <style>
+    :root {
+      --gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+      --btn-gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+      --btn-gradient-hover: linear-gradient(90deg, #00cfff 0%, #00ff94 100%);
+      --border-radius: 18px;
+      --shadow: 0 8px 48px 0 rgba(0, 255, 148, 0.08), 0 2px 16px 0 rgba(0, 207, 255, 0.09);
+      --text-main: #fff;
+      --text-secondary: #bfc9d9;
+      --bg-dark: #18191c;
+      --card-bg: #23242a;
+    }
+    html,
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .chapters-container {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 36px 28px;
+      margin: 50px auto 60px auto;
+      max-width: 1300px;
+    }
+    h1 {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 2.5rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .chapter-card {
+      background: rgba(0, 255, 148, 0.08);
+      border-radius: var(--border-radius);
+      border: 2px solid #232b2a;
+      margin-bottom: 20px;
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+      box-shadow: 0 2px 12px 0 rgba(0, 255, 148, 0.07);
+      cursor: pointer;
+      color: var(--text-main);
+    }
+    .chapter-card:hover {
+      background: rgba(0, 255, 148, 0.18);
+      border-color: #00ff94;
+      box-shadow: 0 6px 24px 0 rgba(0, 255, 148, 0.15);
+      transform: translateY(-4px) scale(1.02);
+    }
+    .chapter-card .card-body {
+      padding: 24px 20px;
+    }
+    .chapter-card .card-title {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chapter-card .card-text {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      margin-top: 6px;
+    }
+    .btn-warning {
+      background: var(--btn-gradient);
+      color: #18191c !important;
+      border: none;
+      border-radius: var(--border-radius);
+      font-weight: 700;
+      padding: 10px 32px;
+      font-size: 1.1rem;
+      transition: 0.18s, transform 0.14s;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .btn-warning:hover,
+    .btn-warning:focus {
+      background: var(--btn-gradient-hover);
+      color: #18191c !important;
+      transform: translateY(-2px) scale(1.04);
+    }
+    .text-center {
+      text-align: center !important;
+    }
+    @media (max-width: 900px) {
+      .chapters-container {
+        padding: 24px 16px;
+        margin: 30px 12px 40px 12px;
+      }
+      .chapter-card .card-body {
+        padding: 18px 14px;
+      }
+      .chapter-card .card-title {
+        font-size: 1.15rem;
+      }
+      .chapter-card .card-text {
+        font-size: 1rem;
+      }
+    }
+    @media (max-width: 600px) {
+      .chapters-container {
+        padding: 18px 12px;
+        margin: 20px 8px 30px 8px;
+      }
+      .chapter-card .card-body {
+        padding: 14px 10px;
+      }
+      .chapter-card .card-title {
+        font-size: 1.05rem;
+      }
+      .chapter-card .card-text {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="chapters-container">
-            <h1 class="text-center mb-4">CHAPTERS</h1>
-            <div class="row">
-                {% for chapter in chapters %}
-                <div class="col-md-4">
-                    <div class="card chapter-card" onclick="window.location.href='/quizzes/{{ chapter[0] }}'">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ chapter[1] }}</h5>
-                            <p class="card-text">{{ chapter[2] or 'No description available' }}</p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-                {% if not chapters %}
-                <div class="col-12 text-center">
-                    <p>No chapters available for this subject.</p>
-                </div>
-                {% endif %}
+  <div class="container">
+    <div class="chapters-container">
+      <h1>CONCEPTS</h1>
+      <div class="row">
+        {% for chapter in chapters %}
+        <div class="col-md-4">
+          <div class="card chapter-card" onclick="window.location.href='/quizzes/{{ chapter[0] }}'">
+            <div class="card-body">
+              <h5 class="card-title">{{ chapter[1] }}</h5>
+              <p class="card-text">{{ chapter[2] or 'No description available' }}</p>
             </div>
-            <div class="text-center mt-4">
-                <a href="/subjects" class="btn btn-warning">Back to Subjects</a>
-            </div>
+          </div>
         </div>
+        {% endfor %}
+        {% if not chapters %}
+        <div class="col-12 text-center">
+          <p>No concepts available for this subject.</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="text-center">
+        <a href="/subjects" class="btn btn-warning">Back to Concepts</a>
+      </div>
     </div>
+  </div>
 </body>
 </html>

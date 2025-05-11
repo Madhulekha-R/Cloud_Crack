@@ -16,7 +16,9 @@ def init_db():
             password TEXT NOT NULL,
             full_name TEXT NOT NULL,
             qualification TEXT,
-            dob TEXT)""")
+            dob TEXT,
+            profile_pic TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP)""")
 
         cursor.execute("""CREATE TABLE IF NOT EXISTS admin (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,6 +78,14 @@ def init_db():
                 FOREIGN KEY (quiz_id) REFERENCES quizzes (id),
                 FOREIGN KEY (user_id) REFERENCES users (id),
                 FOREIGN KEY (question_id) REFERENCES questions (id))""")
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                message TEXT NOT NULL,
+                sent_at DATETIME DEFAULT CURRENT_TIMESTAMP)""")
 
         conn.commit()
 

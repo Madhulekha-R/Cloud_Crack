@@ -4,19 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        body {
-            background: linear-gradient(to right, #34495e, #2ecc71);
+        :root {
+            --gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+            --btn-gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+            --btn-gradient-hover: linear-gradient(90deg, #00cfff 0%, #00ff94 100%);
+            --border-radius: 16px;
+            --shadow: 0 8px 32px 0 rgba(0,255,148,0.09), 0 2px 10px 0 rgba(0,207,255,0.08);
+            --text-main: #fff;
+            --bg-dark: #18191c;
+            --card-bg: #23242a;
+        }
+        html, body {
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Source Sans Pro', Arial, sans-serif;
             min-height: 100vh;
-            color: white;
+            margin: 0;
+            padding: 0;
         }
         .result-container {
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 50px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            border: 2.5px solid #5a626d;
+            padding: 38px 30px 30px 30px;
+            margin: 60px auto 0 auto;
+            max-width: 1000px;
+            width: 98vw;
             text-align: center;
+        }
+        h1 {
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+            font-size: 2.2rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5em;
+        }
+        .result-container p {
+            font-size: 1.18rem;
+            color: #bfc9d9;
+            margin-bottom: 10px;
+        }
+        .result-container h2 {
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+            margin-top: 32px;
+            margin-bottom: 18px;
+            font-size: 1.5rem;
+        }
+        .result-container .passed {
+            color: #00ff94;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px #00ff9444;
+        }
+        .result-container .failed {
+            color: #e74c3c;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px #e74c3c44;
+        }
+        .btn-warning, .btn.btn-warning {
+            background: var(--btn-gradient);
+            color: #18191c !important;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            padding: 10px 32px;
+            font-size: 1.1rem;
+            transition: 0.18s, transform 0.14s;
+            margin-top: 20px;
+        }
+        .btn-warning:hover, .btn-warning:focus {
+            background: var(--btn-gradient-hover);
+            color: #18191c !important;
+            transform: translateY(-2px) scale(1.04);
+        }
+        @media (max-width: 600px) {
+            .result-container { padding: 18px 4vw; margin: 30px 2vw 0 2vw; }
+            h1 { font-size: 1.3rem; }
+            .result-container h2 { font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -28,9 +98,9 @@
         <p>Correct Answers: {{ score }}</p>
         <p>Your Score: {{ percentage_score }}%</p>
         {% if percentage_score >= 50 %}
-        <h2 style="color: #2ecc71;">Congratulations! You passed!</h2>
+        <h2 class="passed">Congratulations! You passed!</h2>
         {% else %}
-        <h2 style="color: #e74c3c;">Better luck next time!</h2>
+        <h2 class="failed">Better luck next time!</h2>
         {% endif %}
         <a href="/user_dashboard" class="btn btn-warning mt-4">Back to Dashboard</a>
     </div>
@@ -38,3 +108,4 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

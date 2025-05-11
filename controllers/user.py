@@ -1,5 +1,12 @@
-from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template
+from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template, current_app
 import sqlite3
+import os
+import uuid
+from werkzeug.utils import secure_filename
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 DB_NAME = "quiz_master.db"
@@ -18,7 +25,8 @@ def register():
     if cursor.fetchone():
         conn.close()
         return jsonify({"error": "User already exists"}), 400
-    cursor.execute("""INSERT INTO users (username, password, first_name, last_name, education) VALUES (?, ?, ?, ?, ?)""", (data['username'], data['password'], data.get('first_name', ''), data.get('last_name', ''), data.get('education', '')))
+    cursor.execute("INSERT INTO users (username, password, full_name, qualification, dob, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+        (data['username'], data['password'], data.get('full_name', ''), data.get('qualification', ''), data.get('dob', '')))
     conn.commit()
     conn.close()
     return jsonify({"message": "User registered successfully!"})
@@ -42,19 +50,29 @@ def profile():
 def update_profile():
     if 'user_id' not in session:
         return jsonify({'status': 'error', 'message': 'User not logged in'}), 401
-    full_name = request.form.get('full_name')
-    qualification = request.form.get('qualification')
-    dob = request.form.get('dob')
-    if not full_name:
-        return jsonify({'status': 'error', 'message': 'Full name is required'}), 400
+
+    profile_pic = request.files.get('profile_pic')
+    filename = None
+    
+    if profile_pic and allowed_file(profile_pic.filename):
+        ext = profile_pic.filename.rsplit('.', 1)[1].lower()
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        profile_pic.save(filepath)
+
     conn = sqlite3.connect('quiz_master.db')
     cursor = conn.cursor()
     try:
-        cursor.execute("""UPDATE users SET full_name = ?, qualification = ?, dob = ? WHERE id = ?""", (full_name, qualification, dob, session['user_id']))
+        if filename:
+            cursor.execute("UPDATE users SET profile_pic=? WHERE id=?", (filename, session['user_id']))
+            session['profile_pic'] = filename
+        else:
+            cursor.execute("""UPDATE users SET full_name=?, qualification=?, dob=? WHERE id=?""", 
+                (request.form.get('full_name'), request.form.get('qualification'), request.form.get('dob'), session['user_id']))
         conn.commit()
-        conn.close()
         return jsonify({'status': 'success', 'message': 'Profile updated successfully'})
     except Exception as e:
         conn.rollback()
-        conn.close()
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    finally:
+        conn.close()

@@ -233,3 +233,66 @@ def delete_question(question_id):
     except sqlite3.Error as e:
         conn.close()
         return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@admin_bp.route('/users')
+def get_users():
+    conn = sqlite3.connect('quiz_master.db')
+    cursor = conn.cursor()
+    cursor.execute("""SELECT id, username, COALESCE(created_at, 'N/A') AS registration_date FROM users""")
+    users = [{"id": row[0], "username": row[1], "created_at": row[2]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify({"users": users})
+
+@admin_bp.route('/delete_user/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    conn = sqlite3.connect('quiz_master.db')
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+        return jsonify({'success': True, 'message': 'User deleted successfully'})
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        conn.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+
+@admin_bp.route('/user_stats')
+def user_stats():
+    conn = sqlite3.connect('quiz_master.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as count FROM users WHERE created_at >= date('now', '-6 months') GROUP BY month ORDER BY month""")
+        result = cursor.fetchall()
+        labels = [row[0] for row in result]
+        values = [row[1] for row in result]
+        return jsonify({"labels": labels, "values": values})
+    except sqlite3.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+@admin_bp.route('/courses_with_quiz_count')
+def courses_with_quiz_count():
+    conn = sqlite3.connect('quiz_master.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""SELECT s.name, COUNT(q.id) as quiz_count FROM subjects s LEFT JOIN chapters c ON s.id = c.subject_id LEFT JOIN quizzes q ON c.id = q.chapter_id GROUP BY s.id ORDER BY s.name""")
+        result = cursor.fetchall()
+        courses = [{"name": row[0], "quiz_count": row[1]} for row in result]
+        return jsonify(courses)
+    except sqlite3.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+@admin_bp.route('/contact_messages')
+def get_contact_messages():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM contact_messages ORDER BY sent_at DESC")
+    messages = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(messages)

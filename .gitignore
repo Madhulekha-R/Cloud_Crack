@@ -6,3 +6,9 @@ quiz_master.db
 
 # Project report PDF
 *.pdf
+
+#database file
+models/
+
+#backend files
+/backend/

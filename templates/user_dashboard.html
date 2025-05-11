@@ -3,141 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - User Dashboard</title>
+    <title>CloudCrack - User Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background: linear-gradient(to right, #34495e, #2ecc71);
+        :root {
+            --gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+            --btn-gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+            --btn-gradient-hover: linear-gradient(90deg, #00cfff 0%, #00ff94 100%);
+            --border-radius: 16px;
+            --text-main: #fff;
+            --text-secondary: #bfc9d9;
+            --bg-dark: #18191c;
+            --card-bg: #23242a;
+        }
+        html, body {
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Source Sans Pro', Arial, sans-serif;
             min-height: 100vh;
-            color: white;
-            display: flex; 
-            flex-direction: column; 
+            margin: 0;
+            padding: 0;
         }
         .dashboard-container {
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 38px 38px 28px 38px;
+            margin: 40px auto 40px auto;
+            max-width: 1300px;
+            width: 98vw;
+            position: relative;
         }
-        .stats-card {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            text-align: center; 
-        }
-        .recent-attempts-card {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-        }
-        .search-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+        .profile-top {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            margin-bottom: -30px;
+            z-index: 10;
+            position: relative;
         }
         .user-icon {
-            position: absolute;
-            top: 30px;
-            right: 40px;
             cursor: pointer;
+            margin-bottom: -25px;
+            margin-right: 10px;
+            background: none;
+            border: none;
+            position: relative;
+            z-index: 10;
         }
         .user-icon img {
-            width: 40px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
+            border: 2px solid #00ff94;
+            background: #23242a;
+            object-fit: cover;
+            box-shadow: none; 
         }
-        .browse-subjects-container {
-            text-align: center; 
-            margin-top: 10px; 
+        .dashboard-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            gap: 18px;
         }
-        .full-width-button {
-            display: block; 
-            width: 100%;    
-            text-align: center; 
-            padding: 86px; 
-            background-color: #ffcc00; 
-            color: #34495e; 
-            font-size: 1.5em; 
-            border-radius: 10px; 
-            transition: background-color 0.3s ease; 
+        .dashboard-header h1 {
+            font-size: 2.7rem;
+            margin-bottom: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        .search-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            gap: 0;
+        }
+        .search-form {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #18191c;
+            border-radius: 32px;
+            border: 2px solid #00ff94;
+            padding: 0 8px 0 24px;
+            height: 50px;
+            max-width: 100%;
+            box-shadow: none;
+        }
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 1.13rem;
+            outline: none;
+            padding: 0 8px;
+            height: 48px;
+        }
+        .search-btn {
+            background: var(--btn-gradient);
+            color: #18191c;
+            border: none;
+            border-radius: 24px;
+            font-weight: 700;
+            font-size: 1.08rem;
+            padding: 1px 36px;
+            margin-left: 12px;
+            cursor: pointer;
+            transition: 0.18s, transform 0.14s;
+            height: 30px;
+        }
+        .search-btn:hover, .search-btn:focus {
+            background: var(--btn-gradient-hover);
+            color: #18191c;
+            transform: translateY(-2px) scale(1.04);
+        }
+        .dashboard-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
+        }
+        .dashboard-col {
+            flex: 1 1 0;
+            min-width: 260px;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .dashboard-card {
+            background: #23242a;
+            border-radius: var(--border-radius);
+            padding: 22px 18px;
+            margin-bottom: 0;
+        }
+        .dashboard-card h5 {
+            margin-bottom: 10px;
+            font-size: 1.13rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+        }
+        .dashboard-graph {
+            flex: 2 1 0;
+            min-width: 320px;
+            background: #23242a;
+            border-radius: var(--border-radius);
+            padding: 22px 18px;
+        }
+        .quest-card {
+            background: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+            color: #18191c;
+            border-radius: var(--border-radius);
+            font-size: 1.28rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 86px 0;
+            margin-top: 1px;
+            margin-bottom: 0;
+            cursor: pointer;
+            transition: box-shadow 0.18s, transform 0.13s;
+            text-decoration: none;
+            display: block;
+            box-shadow: none;
+        }
+        .quest-card:hover, .quest-card:focus {
+            background: linear-gradient(90deg, #00cfff 0%, #00ff94 100%);
+            color: #18191c;
+            text-decoration: underline;
+            transform: translateY(-2px) scale(1.03);
+        }
+        .recent-attempts-card {
+            background: #23242a;
+            border-radius: var(--border-radius);
+            margin-top: 28px;
+            padding: 22px 16px;
+        }
+        .recent-attempts-card h5 {
+            margin-bottom: 16px;
+            font-size: 1.13rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+        }
+        .table {
+            background: transparent;
+            color: #fff;
+            border-radius: var(--border-radius);
+            margin-bottom: 0;
+            table-layout: fixed;
+            width: 100%;
+        }
+        .table th, .table td {
+            border-bottom: 1px solid #333;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 1px;
+            vertical-align: middle;
+            padding: 10px 6px;
+        }
+        .table th {
+            background: #23242a;
+            color: #00ff94;
+            font-weight: 700;
+        }
+        .btn-warning, .btn.btn-warning, .btn.btn-sm.btn-warning {
+            background: var(--btn-gradient);
+            color: #18191c !important;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            transition: 0.18s, transform 0.14s, box-shadow 0.18s;
+        }
+        .btn-warning:hover, .btn-warning:focus, .btn.btn-warning:hover, .btn.btn-warning:focus {
+            background: var(--btn-gradient-hover);
+            color: #18191c !important;
+            transform: translateY(-2px) scale(1.04);
+        }
+        @media (max-width: 900px) {
+            .dashboard-row { flex-direction: column; gap: 18px; }
+            .dashboard-col, .dashboard-graph { max-width: 100%; min-width: 0; }
+            .dashboard-container { padding: 16px 4px; }
+        }
+        @media (max-width: 600px) {
+            .dashboard-container { padding: 8px 0; }
+            .dashboard-header { flex-direction: column; gap: 8px; }
+            .profile-top { justify-content: center; }
+            .user-icon { margin-bottom: 0; }
+            .dashboard-row { gap: 0; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="dashboard-container position-relative">
-            <div class="user-icon" onclick="window.location.href='/user/profile'">
-                <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="User Profile">
+        <div class="dashboard-container">
+            <div class="profile-top">
+                <div class="user-icon" onclick="window.location.href='/user/profile'">
+                    <img src="{% if profile_pic %}
+                                {{ url_for('static', filename='profile_pics/' + profile_pic) }}?v={{ now }}
+                              {% else %}
+                                https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png
+                              {% endif %}"
+                         alt="User Profile"
+                         class="profile-image">
+                </div>
             </div>
-            <h1 class="text-center mb-3">Welcome, {{ username }}!</h1>
-            <p class="text-center mb-4">"The only way to do great work is to love what you do." - Steve Jobs</p>
-            <div class="search-container">
-                <form action="/search" method="GET">
-                    <div class="input-group">
-                        <input type="text" class="form-control me-2" placeholder="Search for subjects, chapters, or quizzes" name="query" required>
-                        <button class="btn btn-warning" type="submit">Search</button>
-                    </div>
+            <div class="dashboard-header">
+                <div>
+                    <h1>Welcome, {{ username }}!</h1>
+                    <p class="mb-2" style="color:#bfc9d9; font-size:1.1rem;">"The only way to do great work is to love what you do." - Steve Jobs</p>
+                </div>
+            </div>
+            <div class="search-row">
+                <form action="/search" method="GET" class="search-form">
+                    <input type="text" class="search-input" placeholder="Search for subjects, chapters, or quizzes" name="query" required>
+                    <button class="search-btn" type="submit">Search</button>
                 </form>
             </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card stats-card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title text-center mb-3">Performance Statistics</h5>
-                            <div style="text-align: center;">
-                                <p>Total Quizzes Attempted: <strong>{{ total_quizzes }}</strong></p>
-                                <p>Average Score: <strong>{{ avg_score }}%</strong></p>
-                                <p>Top Score: <strong>{{ max_score }}%</strong></p>
-                            </div>
-                        </div>
-                    </div>                    
-                    <div class="browse-subjects-container">
-                        <a href="/subjects" class="btn btn-lg btn-warning full-width-button">Let's Begin the Quest!</a>
-                    </div>                    
-                </div>
-                <div class="col-md-8">
-                    <div class="card stats-card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Performance Graph</h5>
-                            <canvas id="performanceChart"></canvas>
-                        </div>
+            <div class="dashboard-row">
+                <div class="dashboard-col" style="max-width:340px;">
+                    <div class="dashboard-card">
+                        <h5>Performance Statistics</h5>
+                        <p>Total Quizzes Attempted: <strong>{{ total_quizzes }}</strong></p>
+                        <p>Average Score: <strong>{{ avg_score }}%</strong></p>
+                        <p>Top Score: <strong>{{ max_score }}%</strong></p>
                     </div>
+                    <a href="/subjects" class="quest-card">Let's Begin the Quest!</a>
+                </div>
+                <div class="dashboard-graph">
+                    <h5>Performance Graph</h5>
+                    <canvas id="performanceChart"></canvas>
                 </div>
             </div>
-            <div class="card recent-attempts-card">
-                <div class="card-body">
-                    <h5 class="card-title">Recent Quiz Attempts (Highest Score)</h5>
-                    <table class="table text-white">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Chapter</th>
-                                <th>Date</th>
-                                <th>Score</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for attempt in recent_attempts %}
-                            <tr>
-                                <td>{{ attempt[1] }}</td>
-                                <td>{{ attempt[2] }}</td>
-                                <td>{{ attempt[3] }}</td>
-                                <td>{{ attempt[4] }}</td>
-                                <td>
-                                    <a href="/take_quiz/{{ attempt[0] }}" class="btn btn-sm btn-warning">Retake Quiz</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="recent-attempts-card">
+                <h5>Recent Quiz Attempts (Highest Score)</h5>
+                <div style="overflow-x:auto;">
+                <table class="table text-white">
+                    <colgroup>
+                        <col style="width:22%">
+                        <col style="width:22%">
+                        <col style="width:22%">
+                        <col style="width:17%">
+                        <col style="width:17%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Courses</th>
+                            <th>Concepts</th>
+                            <th>Date</th>
+                            <th>Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in recent_attempts %}
+                        <tr>
+                            <td>{{ attempt[1] }}</td>
+                            <td>{{ attempt[2] }}</td>
+                            <td>{{ attempt[3] }}</td>
+                            <td>{{ attempt[4] }}</td>
+                            <td>
+                                <a href="/take_quiz/{{ attempt[0] }}" class="btn btn-sm btn-warning">Retake Quiz</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('performanceChart').getContext('2d');
