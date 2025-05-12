@@ -2,7 +2,7 @@
 
 This project provides the user and admin dashboards, quiz management, and quiz-taking interfaces.
 
-- **Tech Stack:** HTML, CSS, JavaScript, Bootstrap, Chart.js, Font Awesome
+- **Tech Stack:** Python, Flask, HTML, CSS, JavaScript, Bootstrap, Chart.js
 - **Features:**  
   - Modern dark theme UI  
   - User and admin dashboards  
