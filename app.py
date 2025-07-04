@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory, flash
 import sqlite3
 import os
 import uuid
@@ -9,20 +9,49 @@ from controllers.user import user_bp
 from controllers.contact import contact_bp
 import json
 from datetime import datetime
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from google_auth_oauthlib.flow import Flow
+from controllers.chatbot import chatbot_bp
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here_change_in_production"
+app.secret_key = os.environ.get("SECRET_KEY", "your-secret-key-here")
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(user_bp, url_prefix='/user')
 app.register_blueprint(contact_bp)
+app.register_blueprint(chatbot_bp)
+
+def get_google_auth_flow():
+    return Flow.from_client_config(
+        client_config={
+            "web": {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,  
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token"
+            }
+        },
+        scopes=[
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ],
+        redirect_uri=url_for('google_callback', _external=True)
+    )
 
 def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 init_db()
 
@@ -75,7 +104,86 @@ def login():
             return redirect(url_for('user_dashboard'))
         conn.close()
         return "Invalid credentials. Please try again."
-    return redirect(url_for('auth'))
+    return render_template('auth.html')
+
+@app.route('/google_login')
+def google_login():
+    flow = get_google_auth_flow()
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true'
+    )
+    session['state'] = state
+    return redirect(authorization_url)
+
+@app.route('/google_callback')
+def google_callback():
+    flow = get_google_auth_flow()
+    try:
+        flow.fetch_token(authorization_response=request.url)
+        credentials = flow.credentials
+        try:
+            id_info = id_token.verify_oauth2_token(
+                credentials.id_token,
+                google_requests.Request(),
+                GOOGLE_CLIENT_ID,
+                clock_skew_in_seconds=10  
+            )
+        except TypeError:
+            id_info = id_token.verify_oauth2_token(
+                credentials.id_token,
+                google_requests.Request(),
+                GOOGLE_CLIENT_ID
+            )
+        google_id = id_info['sub']
+        email = id_info['email']
+        name = id_info.get('name', '')
+        picture = id_info.get('picture', '')
+        username = email.split('@')[0]
+        conn = sqlite3.connect('quiz_master.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE google_id = ?", (google_id,))
+        user = cursor.fetchone()
+        if not user:
+            cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+            user = cursor.fetchone()
+            if user:
+                cursor.execute("UPDATE users SET google_id = ? WHERE id = ?", (google_id, user[0]))
+                user_id = user[0]
+            else:
+                dummy_password = str(uuid.uuid4())
+                cursor.execute("""
+                    INSERT INTO users 
+                    (username, google_id, email, full_name, profile_pic, password, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                """, (username, google_id, email, name, picture, dummy_password))
+                user_id = cursor.lastrowid
+            conn.commit()
+        else:
+            user_id = user[0]
+        conn.close()
+        session['user'] = username
+        session['user_id'] = user_id
+        session['profile_pic'] = picture
+        return redirect(url_for('user_dashboard'))
+    except ValueError as e:
+        if "Token used too early" in str(e):
+            flash("Google login failed: Your computer's clock is out of sync. Please synchronize your system time with the internet and try again.")
+            return render_template("auth.html", error="Google login failed: Please sync your system clock and try again."), 400
+        else:
+            print(f"Google OAuth error: {e}")
+            return jsonify({
+                "error": "Internal Server Error",
+                "message": str(e),
+                "success": False
+            }), 500
+    except Exception as e:
+        print(f"Google OAuth error: {e}")
+        return jsonify({
+            "error": "Internal Server Error",
+            "message": str(e),
+            "success": False
+        }), 500
 
 @app.route('/logout')
 def logout():
@@ -94,10 +202,10 @@ def user_dashboard():
         return redirect(url_for('login'))
     user_id = session['user_id']
     conn = sqlite3.connect('quiz_master.db')
-    cursor = conn.cursor()
+    cursor = conn.cursor() 
     cursor.execute("SELECT profile_pic FROM users WHERE id=?", (user_id,))
     result = cursor.fetchone()
-    profile_pic = result[0] if result and result[0] else None 
+    profile_pic = result[0] if result and result[0] and not result[0].startswith('http') else None
     try:
         cursor.execute("SELECT COUNT(DISTINCT quiz_id) FROM scores WHERE user_id = ?", (user_id,))
         total_quizzes = cursor.fetchone()[0] or 0
@@ -123,25 +231,6 @@ def user_dashboard():
     finally:
         conn.close()    
     return render_template('user_dashboard.html', username=session['user'], total_quizzes=total_quizzes, avg_score=avg_score, max_score=max_score, recent_attempts=recent_attempts, chart_data_json=chart_data_json, profile_pic=profile_pic, now=int(datetime.utcnow().timestamp()))
-
-@app.route('/user/update_profile', methods=['POST'])
-def update_profile():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user_id = session['user_id']
-    profile_pic = request.files.get('profile_pic')
-    if profile_pic and allowed_file(profile_pic.filename):
-        filename = secure_filename(profile_pic.filename)
-        unique_name = f"{uuid.uuid4().hex}_{filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-        profile_pic.save(filepath)
-        conn = sqlite3.connect('quiz_master.db')
-        cursor = conn.cursor()
-        cursor.execute("UPDATE users SET profile_pic=? WHERE id=?", (unique_name, user_id))
-        conn.commit()
-        conn.close()
-        session['profile_pic'] = unique_name  
-    return redirect(url_for('user_dashboard'))
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -247,7 +336,6 @@ def submit_quiz(quiz_id):
                 print(f"No answer provided for question {question_id}")
             user_quiz_answers.append((quiz_id, session['user_id'], question_id, user_answer, is_correct))
         percentage_score = round((score / total_questions) * 100, 2) if total_questions > 0 else 0
-
         cursor.execute("""INSERT OR REPLACE INTO scores (user_id, quiz_id, total_scored)VALUES (?, ?, ?)""", (session['user_id'], quiz_id, percentage_score))
         cursor.execute("""DELETE FROM user_quiz_answers WHERE quiz_id = ? AND user_id = ?""", (quiz_id, session['user_id']))
         try:
@@ -265,7 +353,35 @@ def submit_quiz(quiz_id):
     finally:
         if conn:
             conn.close()
-    return render_template('result.html', score=score, total_questions=total_questions, percentage_score=percentage_score)
+    return render_template('result.html', score=score, total_questions=total_questions, percentage_score=percentage_score, quiz_id=quiz_id)
+
+@app.route('/review_answers/<int:quiz_id>')
+def review_answers(quiz_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    conn = sqlite3.connect('quiz_master.db')
+    cursor = conn.cursor()
+    cursor.execute("""SELECT q.id, q.question_statement, q.option1, q.option2, q.option3, q.option4, q.correct_option FROM questions q WHERE q.quiz_id = ?""", (quiz_id,))
+    questions = cursor.fetchall()
+    cursor.execute("""SELECT question_id, user_answer FROM user_quiz_answers WHERE quiz_id = ? AND user_id = ?""", (quiz_id, user_id))
+    user_answers = {row[0]: row[1] for row in cursor.fetchall()}
+    conn.close()
+    review_data = []
+    for q in questions:
+        q_id = q[0]
+        q_text = q[1]
+        options = [q[2], q[3], q[4], q[5]]
+        correct_option_index = int(q[6])
+        correct_answer = options[correct_option_index]
+        user_answer = user_answers.get(q_id, "Not Answered")
+        review_data.append({
+            'question': q_text,
+            'options': options,
+            'user_answer': user_answer,
+            'correct_answer': correct_answer
+        })
+    return render_template('review_answers.html', review_data=review_data)
 
 @app.route('/add_question', methods=['POST'])
 def add_question():

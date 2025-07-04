@@ -4,9 +4,6 @@ __pycache__/
 # SQLite database
 *.db
 
-# Project documentation
-*.pdf
-
 # Ignore backend and model directories (if not meant to be pushed)
 models/
 controllers/

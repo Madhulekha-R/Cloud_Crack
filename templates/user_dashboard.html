@@ -6,6 +6,7 @@
     <title>CloudCrack - User Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -59,7 +60,7 @@
             border: 2px solid #00ff94;
             background: #23242a;
             object-fit: cover;
-            box-shadow: none; 
+            box-shadow: none;
         }
         .dashboard-header {
             display: flex;
@@ -236,17 +237,166 @@
             color: #18191c !important;
             transform: translateY(-2px) scale(1.04);
         }
-        @media (max-width: 900px) {
-            .dashboard-row { flex-direction: column; gap: 18px; }
-            .dashboard-col, .dashboard-graph { max-width: 100%; min-width: 0; }
-            .dashboard-container { padding: 16px 4px; }
+        #chatbot-fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 64px;
+            height: 64px;
+            background: var(--btn-gradient);
+            border-radius: 50%;
+            box-shadow: 0 4px 16px #00cfff44;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1100;
+            transition: box-shadow 0.2s;
+        }
+        #chatbot-fab:hover {
+            box-shadow: 0 6px 24px #00ff9444;
+            background: var(--btn-gradient-hover);
+        }
+        #chatbot-popup {
+            display: none;
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 350px;
+            z-index: 1200;
+        }
+        #chatbot-popup .card {
+            border-radius: 18px;
+            box-shadow: 0 4px 32px 0 rgba(0,255,148,0.11);
+            background: #23242a;
+            border: 2px solid #00ff94;
+        }
+        #chatbot-popup .card-header {
+            background: var(--gradient);
+            color: #18191c;
+            font-weight: 700;
+            border-radius: 16px 16px 0 0;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #chatbot-popup .card-body {
+            height: 260px;
+            overflow-y: auto;
+            background: #23242a;
+            border-bottom: 1px solid #00ff94;
+        }
+        #chatbot-popup .chat-msg {
+            margin: 10px 0;
+            display: flex;
+        }
+        #chatbot-popup .chat-msg.user {
+            justify-content: flex-end;
+        }
+        #chatbot-popup .chat-msg.bot {
+            justify-content: flex-start;
+        }
+        #chatbot-popup .chat-bubble {
+            max-width: 80%;
+            padding: 10px 18px;
+            border-radius: 18px;
+            font-size: 1.03rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        #chatbot-popup .chat-msg.user .chat-bubble {
+            background: var(--btn-gradient);
+            color: #18191c;
+            border-bottom-right-radius: 6px;
+        }
+        #chatbot-popup .chat-msg.bot .chat-bubble {
+            background: #18191c;
+            color: #fff;
+            border-bottom-left-radius: 6px;
+            border: 1px solid #00ff94;
+        }
+        #chatbot-popup .card-footer {
+            background: #23242a;
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+            padding: 10px 12px;
+        }
+        #chatbot-popup .form-control {
+            background: #18191c;
+            color: #fff;
+            border: 1px solid #00ff94;
+            border-radius: 16px;
+        }
+        #chatbot-popup .form-control:focus {
+            border-color: #00cfff;
+            outline: none;
+            box-shadow: none;
+        }
+        #chatbot-popup .btn-primary {
+            background: var(--btn-gradient);
+            border: none;
+            color: #18191c;
+            font-weight: 700;
+            border-radius: 16px;
+        }
+        #chatbot-popup .btn-primary:hover, #chatbot-popup .btn-primary:focus {
+            background: var(--btn-gradient-hover);
+            color: #18191c;
         }
         @media (max-width: 600px) {
-            .dashboard-container { padding: 8px 0; }
-            .dashboard-header { flex-direction: column; gap: 8px; }
-            .profile-top { justify-content: center; }
-            .user-icon { margin-bottom: 0; }
-            .dashboard-row { gap: 0; }
+            #chatbot-fab, #chatbot-popup { right: 1vw; bottom: 1vw; }
+            #chatbot-popup { width: 98vw; }
+            #chatbot-welcome-banner { right: 1vw; bottom: 80px; max-width: 95vw; }
+        }
+        /* Welcome banner */
+        #chatbot-welcome-banner {
+            position: fixed;
+            bottom: 110px;
+            right: 32px;
+            background: #23242a;
+            color: #fff;
+            border: 2px solid #00ff94;
+            border-radius: 14px;
+            padding: 10px 16px 10px 12px;
+            box-shadow: 0 4px 24px #00cfff44;
+            z-index: 1150;
+            font-family: 'Poppins', Arial, sans-serif;
+            max-width: 320px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: fixed;
+            display: block;
+        }
+        #chatbot-welcome-banner #welcome-message {
+            display: block;
+            padding-right: 28px; 
+        }
+        #close-banner-btn {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #00ff94;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            z-index: 2;
+        }
+        .default-profile-icon {
+            width: 58px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #00ff94;
+            border-radius: 50%;
+            background: #23242a;
         }
     </style>
 </head>
@@ -255,13 +405,13 @@
         <div class="dashboard-container">
             <div class="profile-top">
                 <div class="user-icon" onclick="window.location.href='/user/profile'">
-                    <img src="{% if profile_pic %}
-                                {{ url_for('static', filename='profile_pics/' + profile_pic) }}?v={{ now }}
-                              {% else %}
-                                https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png
-                              {% endif %}"
-                         alt="User Profile"
-                         class="profile-image">
+                    {% if profile_pic %}
+                        <img src="{{ url_for('static', filename='profile_pics/' + profile_pic) }}" class="profile-img" alt="Profile Photo">
+                    {% else %}
+                        <div class="default-profile-icon">
+                            <i class="bi bi-person-circle" style="font-size: 2.5rem; color: #00ff94;"></i>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="dashboard-header">
@@ -329,6 +479,31 @@
             </div>
         </div>
     </div>
+    <div id="chatbot-welcome-banner">
+        <span id="welcome-message" style="flex:1;">
+            Hello <span id="welcome-username">{{ username }}</span>, I am CrackMate. Make use of me for better experience.
+        </span>
+        <button onclick="closeWelcomeBanner()" id="close-banner-btn" aria-label="Close">&times;</button>
+    </div>
+    <div id="chatbot-fab" onclick="openChatbot()">
+        <i class="bi bi-robot" style="font-size: 2rem; color: #18191c;"></i>
+    </div>
+    <div id="chatbot-popup">
+      <div class="card shadow">
+        <div class="card-header">
+          <span><i class="bi bi-robot"></i> Ask the Assistant</span>
+          <button onclick="closeChatbot()" style="background:none; border:none; color:#18191c; font-size:1.3rem; font-weight:bold; line-height:1;">&times;</button>
+        </div>
+        <div class="card-body" id="chat-history"></div>
+        <div class="card-footer">
+          <div style="display: flex; align-items: center;">
+            <input type="text" id="chat-input" class="form-control" placeholder="Ask about courses, quizzes..." style="flex:1;">
+            <button class="btn btn-primary" onclick="sendChat()" style="margin-left: 10px;"><i class="bi bi-send"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('performanceChart').getContext('2d');
@@ -343,11 +518,68 @@
                         y: {beginAtZero: true, title: {display: true, text: 'Score (%)', color: 'white'}, ticks: {color: 'white'}, grid: {color: 'rgba(255, 255, 255, 0.1)'}},
                         x: {ticks: {color: 'white'}, grid: {color: 'rgba(255, 255, 255, 0.1)'}}
                     },
-                    plugins: {legend: {labels: {color: 'white'}}
-                    }
+                    plugins: {legend: {labels: {color: 'white'}}}
                 }
             });
         });
+        function closeWelcomeBanner() {
+            document.getElementById('chatbot-welcome-banner').style.display = 'none';
+        }
+        function openChatbot() {
+            document.getElementById('chatbot-fab').style.display = 'none';
+            document.getElementById('chatbot-popup').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('chat-input').focus();
+            }, 100);
+            const chat = document.getElementById('chat-history');
+            if (chat.childElementCount === 0) {
+                fetch('/chatbot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: "__welcome__"})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    appendChat(data.response, false);
+                })
+                .catch(() => {
+                    appendChat("Sorry, the assistant is currently unavailable.", false);
+                });
+            }
+        }
+        function closeChatbot() {
+            document.getElementById('chatbot-popup').style.display = 'none';
+            document.getElementById('chatbot-fab').style.display = 'flex';
+        }
+        function appendChat(message, fromUser=true) {
+            const chat = document.getElementById('chat-history');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg ' + (fromUser ? 'user' : 'bot');
+            msgDiv.innerHTML = `<div class="chat-bubble">${message}</div>`;
+            chat.appendChild(msgDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            appendChat(msg, true);
+            input.value = '';
+            fetch('/chatbot', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: msg})
+            })
+            .then(res => res.json())
+            .then(data => {
+                appendChat(data.response, false);
+                if(data.link){
+                    appendChat(`<a href="${data.link}" class="btn btn-sm btn-success mt-2">Go there</a>`, false);
+                }
+            }).catch(() => {
+                appendChat("Sorry, the assistant is currently unavailable.", false);
+            });
+        }
     </script>
 </body>
 </html>

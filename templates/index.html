@@ -248,6 +248,14 @@
       border-radius: 18px;
       background: transparent;
       object-fit: contain;
+      transition: 
+        transform 0.35s cubic-bezier(.21,1.12,.78,1.08),
+        box-shadow 0.3s;
+    }
+    .hero-right img:hover {
+      transform: scale(1.06) rotate(-2deg);
+      box-shadow: 0 18px 48px #00cfff77;
+      cursor: pointer;
     }
     @media (max-width: 900px) {
       .hero-two-col {
@@ -337,7 +345,6 @@
       background: rgba(35,36,42,0.92);
       padding: 28px 24px;
       border-radius: 16px;
-      box-shadow: 0 2px 12px 0 rgba(0,255,148,0.12);
       max-width: 400px;
       margin: 0 auto;
       display: flex;
@@ -367,6 +374,31 @@
     }
     .contact-form button:hover {
       background: var(--btn-gradient-hover);
+    }
+    .hover-card {
+      background: #23242a;
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      font-size: 1.08rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px #00cfff22;
+      transition:
+        background 0.3s,
+        box-shadow 0.3s,
+        transform 0.2s,
+        color 0.3s;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+    .hover-card:hover, .quiz-list .hover-card:focus {
+      background: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
+      color: #18191c;
+      box-shadow: 0 4px 24px #00cfff44;
+      transform: translateY(-4px) scale(1.03);
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px);}
@@ -423,13 +455,13 @@
       CloudCrack is a dynamic quiz platform designed to help users test and expand their knowledge across cloud technologies and services. Users can register, select topics of interest, and participate in a variety of quizzes. Each quiz provides instant feedback, correct answers, and detailed results to help users learn and improve.<br><br>
       <strong>Key Features:</strong>
       <ul class="feature-list">
-        <li><i class="fa fa-user"></i> Simple sign-up/sign-in for personalized experience</li>
-        <li><i class="fa fa-list"></i> Select quiz topics of your choice</li>
-        <li><i class="fa fa-random"></i> Randomized questions and question pools</li>
-        <li><i class="fa fa-clock-o"></i> Quiz timer for fair play</li>
-        <li><i class="fa fa-trophy"></i> Leaderboards and scoring</li>
-        <li><i class="fa fa-check"></i> View correct answers and explanations</li>
-        <li><i class="fa fa-gift"></i> Earn rewards and badges for achievements</li>
+        <li class="hover-card"><i class="fa fa-user"></i> Simple sign-up/sign-in for personalized experience</li>
+        <li class="hover-card"><i class="fa fa-list"></i> Select quiz topics of your choice</li>
+        <li class="hover-card"><i class="fa fa-random"></i> Randomized questions and question pools</li>
+        <li class="hover-card"><i class="fa fa-clock-o"></i> Quiz timer for fair play</li>
+        <li class="hover-card"><i class="fa fa-trophy"></i> Leaderboards and scoring</li>
+        <li class="hover-card"><i class="fa fa-check"></i> View correct answers and explanations</li>
+        <li class="hover-card"><i class="fa fa-gift"></i> Earn rewards and badges for achievements</li>
       </ul>
       Whether you're preparing for certifications, brushing up on skills, or just having fun, CloudCrack offers a comprehensive environment for cloud learning and competition.<br>
     </div>
@@ -441,28 +473,28 @@
       CloudCrack offers a wide range of quizzes to suit every learner. Each quiz is carefully curated to cover essential concepts, practical knowledge, and real-world scenarios in cloud computing.<br><br>
       <strong>Major Cloud Platforms:</strong>
       <ul class="quiz-list">
-        <li><i class="fa fa-cloud"></i> AWS (Amazon Web Services)</li>
-        <li><i class="fa fa-windows"></i> Microsoft Azure</li>
-        <li><i class="fa fa-google"></i> Google Cloud Platform (GCP)</li>
-        <li><i class="fa fa-cloud-upload"></i> IBM Cloud</li>
-        <li><i class="fa fa-database"></i> Oracle Cloud</li>
+        <li class="hover-card"><i class="fa fa-cloud"></i> AWS (Amazon Web Services)</li>
+        <li class="hover-card"><i class="fa fa-windows"></i> Microsoft Azure</li>
+        <li class="hover-card"><i class="fa fa-google"></i> Google Cloud Platform (GCP)</li>
+        <li class="hover-card"><i class="fa fa-cloud-upload"></i> IBM Cloud</li>
+        <li class="hover-card"><i class="fa fa-database"></i> Oracle Cloud</li>
       </ul>
       <strong>Common Cloud Topics:</strong>
       <ul class="quiz-list">
-        <li><i class="fa fa-shield"></i> Cloud Security</li>
-        <li><i class="fa fa-database"></i> Cloud Databases</li>
-        <li><i class="fa fa-cogs"></i> DevOps in the Cloud</li>
-        <li><i class="fa fa-code"></i> Serverless & Cloud Functions</li>
-        <li><i class="fa fa-sitemap"></i> Networking & Content Delivery</li>
-        <li><i class="fa fa-cube"></i> Storage & Compute</li>
-        <li><i class="fa fa-users"></i> General Cloud Knowledge</li>
-        <li><i class="fa fa-question"></i> And more, including user-submitted quizzes!</li>
+        <li class="hover-card"><i class="fa fa-shield"></i> Cloud Security</li>
+        <li class="hover-card"><i class="fa fa-database"></i> Cloud Databases</li>
+        <li class="hover-card"><i class="fa fa-cogs"></i> DevOps in the Cloud</li>
+        <li class="hover-card"><i class="fa fa-code"></i> Serverless & Cloud Functions</li>
+        <li class="hover-card"><i class="fa fa-sitemap"></i> Networking & Content Delivery</li>
+        <li class="hover-card"><i class="fa fa-cube"></i> Storage & Compute</li>
+        <li class="hover-card"><i class="fa fa-users"></i> General Cloud Knowledge</li>
+        <li class="hover-card"><i class="fa fa-question"></i> And more, including user-submitted quizzes!</li>
       </ul>
       <strong>Quiz Formats:</strong>
       <ul class="quiz-list">
-        <li><i class="fa fa-list-ol"></i> Multiple Choice</li>
-        <li><i class="fa fa-check-square-o"></i> True/False</li>
-        <li><i class="fa fa-bar-chart"></i> Scored & Assessment Quizzes</li>
+        <li class="hover-card"><i class="fa fa-list-ol"></i> Multiple Choice</li>
+        <li class="hover-card"><i class="fa fa-check-square-o"></i> True/False</li>
+        <li class="hover-card"><i class="fa fa-bar-chart"></i> Scored & Assessment Quizzes</li>
       </ul>
       Each quiz provides instant feedback and explanations, so you can learn as you play.<br>
     </div>

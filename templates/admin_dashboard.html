@@ -84,6 +84,9 @@
       padding: 18px 22px;
       margin-bottom: 18px;
       transition: transform 0.18s, box-shadow 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       cursor: pointer;
     }
     .subject-card:hover, .chapter-card:hover, .quiz-card:hover, .question-card:hover {
@@ -228,6 +231,12 @@
         margin-bottom: 20px;
         background: #232b2a;
     }
+    .messages-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
     @media (max-width: 900px) {
       .admin-container { padding: 2px; }
       .subject-card, .chapter-card, .quiz-card, .question-card { padding: 14px 10px; }
@@ -252,30 +261,22 @@
             </div>
             <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab"
-                            data-bs-target="#dashboard-content" type="button" role="tab"
-                            aria-controls="dashboard-content" aria-selected="true">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-content" type="button" role="tab" aria-controls="dashboard-content" aria-selected="true">
                         <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="subjects-tab" data-bs-toggle="tab"
-                            data-bs-target="#subjects-content" type="button" role="tab"
-                            aria-controls="subjects-content" aria-selected="true">
+                    <button class="nav-link" id="subjects-tab" data-bs-toggle="tab" data-bs-target="#subjects-content" type="button" role="tab" aria-controls="subjects-content" aria-selected="true">
                         <i class="fas fa-book me-2"></i>Course Management
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="users-tab" data-bs-toggle="tab"
-                            data-bs-target="#users-content" type="button" role="tab"
-                            aria-controls="users-content" aria-selected="false">
+                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-content" type="button" role="tab" aria-controls="users-content" aria-selected="false">
                         <i class="fas fa-users me-2"></i>User Management
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="messages-tab" data-bs-toggle="tab"
-                            data-bs-target="#messages-content" type="button" role="tab"
-                            aria-controls="messages-content" aria-selected="false">
+                    <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages-content" type="button" role="tab" aria-controls="messages-content" aria-selected="false">
                         <i class="fas fa-envelope me-2"></i>Contact Messages
                     </button>
                 </li>
@@ -287,7 +288,7 @@
                         <canvas id="usersChart"></canvas>
                     </div>
                     <div class="dashboard-card">
-                        <h4 class="mb-4" style="color: #00ff94;">
+                        <h4 class="mb-4" style="color:#00ff94;">
                             <i class="fas fa-book me-2"></i>Courses &amp; Quizzes
                         </h4>
                         <div class="table-responsive">
@@ -304,12 +305,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="subjects-content" role="tabpanel"
-                     aria-labelledby="subjects-tab">
-                    <div class="card mb-4">
+                <div class="tab-pane fade" id="subjects-content" role="tabpanel" aria-labelledby="subjects-tab">
+                    <div class="card mb-4" id="course-management-header">
                         <div class="card-body">
                             <h4 class="card-title"><i class="fas fa-book me-2"></i>Courses Management</h4>
-                            <button class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                            <button class="btn btn-success mt-2" id="add-course-btn" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
                                 <i class="fas fa-plus me-2"></i>Add New Course
                             </button>
                         </div>
@@ -344,7 +344,12 @@
                 </div>
                 <div class="tab-pane fade" id="messages-content" role="tabpanel" aria-labelledby="messages-tab">
                     <div class="dashboard-card">
-                        <h4><i class="fas fa-envelope me-2"></i>Contact Messages</h4>
+                        <div class="messages-header">
+                            <h4><i class="fas fa-envelope me-2"></i>Contact Messages</h4>
+                            <button class="btn btn-danger" onclick="deleteAllMessages()">
+                                <i class="fas fa-trash me-1"></i>Delete All Messages
+                            </button>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-dark table-striped align-middle mb-0">
                                 <thead>
@@ -354,6 +359,7 @@
                                         <th>Email</th>
                                         <th>Message</th>
                                         <th>Sent At</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="messages-list">
@@ -365,6 +371,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="addSubjectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -662,9 +669,41 @@
         </div>
     </div>
 
+    <div class="modal fade" id="aiGenerateModal" tabindex="-1" aria-labelledby="aiGenerateModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" id="aiGenerateModalLabel">
+              AI Question Generator for <span id="aiQuizName"></span>
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="aiQuizId">
+            <div class="mb-3">
+              <label for="aiTopic" class="form-label">Topic Focus</label>
+              <input type="text" class="form-control bg-dark text-light" id="aiTopic" placeholder="e.g., Cloud Storage" required>
+            </div>
+            <div class="mb-3">
+              <label for="aiCount" class="form-label">Number of Questions</label>
+              <input type="number" class="form-control bg-dark text-light" id="aiCount" min="3" max="15" value="5">
+            </div>
+          </div>
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="generateAIQuestions()">
+              <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+              Generate Questions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        
         let usersChart = null;
         let currentSubjectId = null;
         let currentChapterId = null;
@@ -675,7 +714,6 @@
             usersTab.addEventListener('shown.bs.tab', loadUsers);
             loadDashboard();
             loadSubjects();
-
             document.getElementById('dashboard-tab').addEventListener('shown.bs.tab', loadDashboard);
             document.getElementById('add-subject-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -709,8 +747,7 @@
                 e.preventDefault();
                 editQuestion();
             });
-            document.getElementById('messages-tab').addEventListener('shown.bs.tab', loadMessages);
-            
+            document.getElementById('messages-tab').addEventListener('shown.bs.tab', loadMessages);    
         });
 
         function loadMessages() {
@@ -856,13 +893,15 @@
         }
 
         function loadSubjects() {
+            document.getElementById('course-management-header').style.display = 'block';
+            document.getElementById('add-course-btn').style.display = 'block';
             fetch('/admin/subjects')
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('subjects-container');
                     container.innerHTML = '';
                     if (data.length === 0) {
-                        container.innerHTML = '<div class="alert alert-info">No subjects found. Add your first subject!</div>';
+                        container.innerHTML = '<div class="alert alert-info">No courses found. Add your first course!</div>';
                         return;
                     }
                     data.forEach(subject => {
@@ -879,46 +918,48 @@
                     });
                 })
                 .catch(error => {
-                    console.error('Error loading subjects:', error);
+                    console.error('Error loading courses:', error);
                     document.getElementById('subjects-container').innerHTML = 
-                        '<div class="alert alert-danger">Error loading subjects. Please try again later.</div>';
+                        '<div class="alert alert-danger">Error loading courses. Please try again later.</div>';
                 });
         }
 
         function viewSubject(subjectId, name, description) {
             currentSubjectId = subjectId;
+            document.getElementById('course-management-header').style.display = 'none';
+            document.getElementById('add-course-btn').style.display = 'none';
             const container = document.getElementById('subjects-container');
-            const backBtn = document.createElement('button');
-            backBtn.className = 'btn btn-secondary mb-3';
-            backBtn.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to Subjects';
-            backBtn.addEventListener('click', function() {
-                loadSubjects();
-            });
             const subjectDetails = document.createElement('div');
             subjectDetails.className = 'card bg-dark text-white mb-4';
             subjectDetails.innerHTML = `
-                <div class="card-body">
-                    <h3>${name}</h3>
-                    <p>${description || 'No description provided'}</p>
-                    <div class="action-btns">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <button class="btn p-0 me-3" onclick="loadSubjects()" style="background: none; border: none; text-decoration: none;">
+                            <i class="fas fa-chevron-left fs-4" style="color: #00d4aa;"></i>
+                        </button>
+                        <div>
+                            <h3 class="mb-1">${name}</h3>
+                            <p class="mb-0">${description || 'No description provided'}</p>
+                        </div>
+                    </div>
+                    <div class="action-btns d-flex align-items-center gap-2 ms-auto">
                         <button class="btn btn-info" onclick="prepareAddChapter(${subjectId})">
-                            <i class="fas fa-plus me-1"></i>Add Chapter
+                            <i class="fas fa-plus me-1"></i>Add Concepts
                         </button>
                         <button class="btn btn-warning" onclick="prepareEditSubject(${subjectId}, '${name.replace(/'/g, "\\'")}', '${(description || '').replace(/'/g, "\\'")}')">
-                            <i class="fas fa-edit me-1"></i>Edit
+                            <i class="fas fa-edit me-1"></i>
                         </button>
                         <button class="btn btn-danger" onclick="prepareDeleteSubject(${subjectId})">
-                            <i class="fas fa-trash me-1"></i>Delete
+                            <i class="fas fa-trash me-1"></i>
                         </button>
                     </div>
                 </div>
             `;
             const chaptersContainer = document.createElement('div');
             chaptersContainer.id = 'chapter-list';
-            chaptersContainer.className = 'mt-4';
+            chaptersContainer.className = 'mt-4';    
             container.innerHTML = '';
-            container.appendChild(backBtn);
-            container.appendChild(subjectDetails);
+            container.appendChild(subjectDetails);  
             container.appendChild(chaptersContainer);
             loadChaptersForSubject(subjectId);
         }
@@ -928,32 +969,33 @@
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('chapter-list');
-                    container.innerHTML = '<h4 class="mb-3">Chapters</h4>';
+                    container.innerHTML = ''; // Clear existing content
+                    
                     if (data.length === 0) {
-                        container.innerHTML += '<div class="alert alert-info">No chapters found for this subject.</div>';
+                        container.innerHTML += '<div class="alert alert-info">No concepts found for this course.</div>';
                         return;
                     }
+                    
                     data.forEach(chapter => {
                         const chapterCard = document.createElement('div');
                         chapterCard.className = 'content-card';
+                        chapterCard.style.cursor = 'pointer'; // Make it clear it's clickable
+                        
                         chapterCard.innerHTML = `
                             <div class="d-flex justify-content-between align-items-top">
-                                <div>
+                                <div class="flex-grow-1" onclick="viewChapterQuizzes(${chapter.id}, '${chapter.name.replace(/'/g, "\\'")}')">
                                     <h5>${chapter.name}</h5>
                                     <p class="description">${chapter.description || 'No description provided'}</p>
                                 </div>
                                 <div class="action-btns">
-                                    <button class="btn btn-sm btn-info" onclick="prepareAddQuiz(${chapter.id})">
-                                        <i class="fas fa-plus"></i> Add Quiz
+                                    <button class="btn btn-sm btn-info" onclick="prepareAddQuiz(${chapter.id})" title="Add Quiz">
+                                        <i class="fas fa-plus"></i>
                                     </button>
                                     <button class="btn btn-sm btn-warning" onclick="prepareEditChapter(${chapter.id}, '${chapter.name.replace(/'/g, "\\'")}', '${(chapter.description || '').replace(/'/g, "\\'")}')">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="prepareDeleteChapter(${chapter.id})">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                    <button class="btn btn-sm btn-primary" onclick="viewChapter(${chapter.id}, '${chapter.name.replace(/'/g, "\\'")}')">
-                                        <i class="fas fa-eye"></i> View Quizzes
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -964,30 +1006,38 @@
                 .catch(error => {
                     console.error('Error loading chapters:', error);
                     document.getElementById('chapter-list').innerHTML = 
-                        '<div class="alert alert-danger">Error loading chapters. Please try again later.</div>';
+                        '<div class="alert alert-danger">Error loading concepts. Please try again later.</div>';
                 });
         }
 
-        function viewChapter(chapterId, chapterName) {
+        function viewChapterQuizzes(chapterId, chapterName) {
             currentChapterId = chapterId;
             const container = document.getElementById('chapter-list');
             const backBtn = document.createElement('button');
-            backBtn.className = 'btn btn-secondary mb-3';
-            backBtn.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to Chapters';
+            backBtn.className = 'btn p-0 me-3';
+            backBtn.style.cssText = 'background: none; border: none; text-decoration: none;';
+            backBtn.innerHTML = '<i class="fas fa-chevron-left fs-4" style="color: #00d4aa;"></i>';
             backBtn.addEventListener('click', function() {
                 loadChaptersForSubject(currentSubjectId);
             });
+            const headerSection = document.createElement('div');
+            headerSection.className = 'd-flex align-items-center justify-content-between mb-4';
+            const leftSection = document.createElement('div');
+            leftSection.className = 'd-flex align-items-center';
+            leftSection.appendChild(backBtn);
+            const titleDiv = document.createElement('div');
+            titleDiv.innerHTML = `<h4>${chapterName} - Quizzes</h4>`;
+            leftSection.appendChild(titleDiv);
+            const addQuizBtn = document.createElement('button');
+            addQuizBtn.className = 'btn btn-info';
+            addQuizBtn.innerHTML = '<i class="fas fa-plus me-1"></i>Add Quiz';
+            addQuizBtn.onclick = () => prepareAddQuiz(chapterId);  
+            headerSection.appendChild(leftSection);
+            headerSection.appendChild(addQuizBtn);
             const quizzesContainer = document.createElement('div');
-            quizzesContainer.className = 'mt-4';
-            quizzesContainer.innerHTML = `
-                <h4>${chapterName} - Quizzes</h4>
-                <button class="btn btn-info mb-3" onclick="prepareAddQuiz(${chapterId})">
-                    <i class="fas fa-plus me-1"></i>Add Quiz
-                </button>
-                <div id="quizzes-list"></div>
-            `;
+            quizzesContainer.id = 'quizzes-list';
             container.innerHTML = '';
-            container.appendChild(backBtn);
+            container.appendChild(headerSection);
             container.appendChild(quizzesContainer);
             loadQuizzesForChapter(chapterId);
         }
@@ -997,36 +1047,35 @@
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('quizzes-list');
-                    container.innerHTML = '';
+                    container.innerHTML = '';     
                     if (data.length === 0) {
-                        container.innerHTML = '<div class="alert alert-info">No quizzes found for this chapter.</div>';
+                        container.innerHTML = '<div class="alert alert-info">No quizzes found for this concept.</div>';
                         return;
-                    }
+                    }                   
                     data.forEach(quiz => {
                         const quizDate = new Date(quiz.date_of_quiz).toLocaleDateString();
                         const quizCard = document.createElement('div');
-                        quizCard.className = 'content-card';
+                        quizCard.className = 'content-card mb-3';                        
                         quizCard.innerHTML = `
                             <div class="d-flex justify-content-between align-items-top">
-                                <div>
-                                    <p>${quiz.remarks || 'No remarks'}</p>
-                                    <p class="description">Duration: ${quiz.time_duration} mins</p>
+                                <div class="flex-grow-1" onclick="viewQuizQuestions(${quiz.id}, '${quiz.remarks || 'Quiz'}', '${quizDate}')" style="cursor: pointer;">
+                                    <h6>${quiz.remarks || 'Quiz'}</h6>
+                                    <p class="description mb-1">Duration: ${quiz.time_duration} mins</p>
+                                    <p class="description mb-0">Date: ${quizDate}</p>
                                 </div>
                                 <div class="action-btns">
-                                    <button class="btn btn-sm btn-info" onclick="prepareAddQuestion(${quiz.id})">
-                                        <i class="fas fa-plus"></i> Add Question
+                                    <button class="btn btn-sm btn-info" onclick="prepareAddQuestion(${quiz.id})" title="Add Question">
+                                        <i class="fas fa-plus"></i>
                                     </button>
                                     <button class="btn btn-sm btn-warning" onclick="prepareEditQuiz(${quiz.id}, '${quiz.date_of_quiz}', ${quiz.time_duration}, '${(quiz.remarks || '').replace(/'/g, "\\'")}')">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="prepareDeleteQuiz(${quiz.id})">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                    <button class="btn btn-sm btn-primary" onclick="viewQuiz(${quiz.id}, '${quizDate}')">
-                                        <i class="fas fa-eye"></i> View Questions
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
+                            <div id="questions-for-quiz-${quiz.id}" class="mt-3" style="display: none;"></div>
                         `;
                         container.appendChild(quizCard);
                     });
@@ -1038,47 +1087,59 @@
                 });
         }
 
-        function viewQuiz(quizId, quizDate) {
+        function viewQuizQuestions(quizId, quizTitle, quizDate) {
             currentQuizId = quizId;
-            const container = document.getElementById('quizzes-list');
-            const backBtn = document.createElement('button');
-            backBtn.className = 'btn btn-secondary mb-3';
-            backBtn.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to Quizzes';
-            backBtn.addEventListener('click', function() {
-                loadQuizzesForChapter(currentChapterId);
+            const allQuestionContainers = document.querySelectorAll('[id^="questions-for-quiz-"]');
+            allQuestionContainers.forEach(container => {
+                if (container.id !== `questions-for-quiz-${quizId}`) {
+                    container.style.display = 'none';
+                    container.innerHTML = '';
+                }
             });
-            const questionsContainer = document.createElement('div');
-            questionsContainer.className = 'mt-4';
-            questionsContainer.innerHTML = `
-                <h4>Questions</h4>
-                <button class="btn btn-info mb-3" onclick="prepareAddQuestion(${quizId})">
-                    <i class="fas fa-plus me-1"></i>Add Question
-                </button>
-                <div id="questions-list"></div>
-            `;
-            container.innerHTML = '';
-            container.appendChild(backBtn);
-            container.appendChild(questionsContainer);
-            loadQuestionsForQuiz(quizId);
+            const questionsContainer = document.getElementById(`questions-for-quiz-${quizId}`);
+            if (questionsContainer.style.display === 'none' || questionsContainer.innerHTML === '') {
+                questionsContainer.style.display = 'block';
+                questionsContainer.innerHTML = `
+                    <div class="mt-3 p-3" style="background-color: rgba(0, 212, 170, 0.1); border-radius: 8px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">${quizTitle} - Questions (${quizDate})</h6>
+                            <div>
+                                <button class="btn btn-sm btn-info me-2" onclick="prepareAddQuestion(${quizId})">
+                                    <i class="fas fa-plus me-1"></i>Add Question
+                                </button>
+                                <button class="btn btn-sm btn-primary" onclick="openAIGenerateModal(${quizId}, '${quizTitle} on ${quizDate}')">
+                                    <i class="fas fa-magic me-1"></i>AI Generate
+                                </button>
+                            </div>
+                        </div>
+                        <div id="questions-list-${quizId}"></div>
+                    </div>
+                `;
+                loadQuestionsForQuizInline(quizId);
+            } else {
+                questionsContainer.style.display = 'none';
+                questionsContainer.innerHTML = '';
+            }
         }
 
-        function loadQuestionsForQuiz(quizId) {
+        function loadQuestionsForQuizInline(quizId) {
             fetch(`/admin/questions/${quizId}`)
                 .then(response => response.json())
                 .then(data => {
-                    const container = document.getElementById('questions-list');
+                    const container = document.getElementById(`questions-list-${quizId}`);
                     container.innerHTML = '';
+                    
                     if (data.length === 0) {
                         container.innerHTML = '<div class="alert alert-info">No questions found for this quiz.</div>';
                         return;
-                    }
+                    }  
                     data.forEach(question => {
                         const questionCard = document.createElement('div');
-                        questionCard.className = 'question-card';
+                        questionCard.className = 'question-card mb-3';
                         questionCard.innerHTML = `
-                            <div class="d-flex justify-content-between align-items-top">
-                                <div>
-                                    <h5>${question.question_statement}</h5>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                                <div style="flex: 1; padding-right: 15px;">
+                                    <h6>${question.question_statement}</h6>
                                     <div class="options mt-2">
                                         <p class="${question.correct_option === 0 ? 'text-success fw-bold' : ''}">A: ${question.option1}</p>
                                         <p class="${question.correct_option === 1 ? 'text-success fw-bold' : ''}">B: ${question.option2}</p>
@@ -1087,12 +1148,12 @@
                                     </div>
                                     <p class="text-warning">Correct Answer: ${['A', 'B', 'C', 'D'][question.correct_option]}</p>
                                 </div>
-                                <div class="action-btns">
-                                    <button class="btn btn-sm btn-warning" onclick="prepareEditQuestion(${question.id}, '${question.question_statement.replace(/'/g, "\\'")}', '${question.option1.replace(/'/g, "\\'")}', '${question.option2.replace(/'/g, "\\'")}', '${question.option3.replace(/'/g, "\\'")}', '${question.option4.replace(/'/g, "\\'")}', ${question.correct_option})">
-                                        <i class="fas fa-edit"></i> Edit
+                                <div class="action-btns" style="flex-shrink: 0;">
+                                    <button class="btn btn-sm btn-warning me-1" onclick="prepareEditQuestion(${question.id}, '${question.question_statement.replace(/'/g, "\\'")}', '${question.option1.replace(/'/g, "\\'")}', '${question.option2.replace(/'/g, "\\'")}', '${question.option3.replace(/'/g, "\\'")}', '${question.option4.replace(/'/g, "\\'")}', ${question.correct_option})">
+                                        <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="prepareDeleteQuestion(${question.id})">
-                                        <i class="fas fa-trash"></i> Delete
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -1102,7 +1163,7 @@
                 })
                 .catch(error => {
                     console.error('Error loading questions:', error);
-                    document.getElementById('questions-list').innerHTML = 
+                    document.getElementById(`questions-list-${quizId}`).innerHTML = 
                         '<div class="alert alert-danger">Error loading questions. Please try again later.</div>';
                 });
         }
@@ -1123,8 +1184,8 @@
                 loadSubjects();
             })
             .catch(error => {
-                console.error('Error adding subject:', error);
-                alert('Error adding subject. Please try again.');
+                console.error('Error adding course:', error);
+                alert('Error adding course. Please try again.');
             });
         }
         
@@ -1146,7 +1207,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message || 'Subject updated successfully');
+                alert(data.message || 'Course updated successfully');
                 bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide();
                 if (currentSubjectId === parseInt(subjectId)) {
                     viewSubject(subjectId, name, description);
@@ -1155,24 +1216,24 @@
                 }
             })
             .catch(error => {
-                console.error('Error editing subject:', error);
-                alert('Error editing subject. Please try again.');
+                console.error('Error editing course:', error);
+                alert('Error editing course. Please try again.');
             });
         }
         
         function prepareDeleteSubject(subjectId) {
-            if (confirm('Are you sure you want to delete this subject? This will also delete associated chapters and quizzes.')) {
+            if (confirm('Are you sure you want to delete this course? This will also delete associated concepts and quizzes.')) {
                 fetch(`/admin/delete_subject/${subjectId}`, {
                     method: 'DELETE'
                 })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message || 'Subject deleted successfully');
+                    alert(data.message || 'Course deleted successfully');
                     loadSubjects();
                 })
                 .catch(error => {
-                    console.error('Error deleting subject:', error);
-                    alert('Error deleting subject. Please try again.');
+                    console.error('Error deleting course:', error);
+                    alert('Error deleting course. Please try again.');
                 });
             }
         }
@@ -1199,8 +1260,8 @@
                 loadChaptersForSubject(subjectId);
             })
             .catch(error => {
-                console.error('Error adding chapter:', error);
-                alert('Error adding chapter. Please try again.');
+                console.error('Error adding concept:', error);
+                alert('Error adding concept. Please try again.');
             });
         }
         
@@ -1222,29 +1283,29 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message || 'Chapter updated successfully');
+                alert(data.message || 'Concept updated successfully');
                 bootstrap.Modal.getInstance(document.getElementById('editChapterModal')).hide();
                 loadChaptersForSubject(currentSubjectId);
             })
             .catch(error => {
-                console.error('Error editing chapter:', error);
-                alert('Error editing chapter. Please try again.');
+                console.error('Error editing concept:', error);
+                alert('Error editing concept. Please try again.');
             });
         }
         
         function prepareDeleteChapter(chapterId) {
-            if (confirm('Are you sure you want to delete this chapter? This will also delete associated quizzes.')) {
+            if (confirm('Are you sure you want to delete this concept? This will also delete associated quizzes.')) {
                 fetch(`/admin/delete_chapter/${chapterId}`, {
                     method: 'DELETE'
                 })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message || 'Chapter deleted successfully');
+                    alert(data.message || 'Concept deleted successfully');
                     loadChaptersForSubject(currentSubjectId);
                 })
                 .catch(error => {
-                    console.error('Error deleting chapter:', error);
-                    alert('Error deleting chapter. Please try again.');
+                    console.error('Error deleting concept:', error);
+                    alert('Error deleting concept. Please try again.');
                 });
             }
         }
@@ -1337,7 +1398,7 @@
             document.getElementById('question-quiz-id').value = quizId;
             new bootstrap.Modal(document.getElementById('addQuestionModal')).show();
         }
-        
+
         function addQuestion() {
             const quizId = document.getElementById('question-quiz-id').value;
             const questionText = document.getElementById('question-text').value;
@@ -1347,7 +1408,7 @@
             if (correctOptionIndex === -1) {
                 alert('Please select a correct option');
                 return;
-            }
+            } 
             fetch('/admin/add_question', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -1366,9 +1427,8 @@
                 document.getElementById('question-text').value = '';
                 options.forEach(option => option.value = '');
                 correctOptionRadios.forEach(radio => radio.checked = false);
-                
                 bootstrap.Modal.getInstance(document.getElementById('addQuestionModal')).hide();
-                loadQuestionsForQuiz(quizId);
+                loadQuestionsForQuizInline(quizId);
             })
             .catch(error => {
                 console.error('Error adding question:', error);
@@ -1387,7 +1447,7 @@
             radioButtons[correctOption].checked = true;
             new bootstrap.Modal(document.getElementById('editQuestionModal')).show();
         }
-        
+
         function editQuestion() {
             const questionId = document.getElementById('edit-question-id').value;
             const questionText = document.getElementById('edit-question-text').value;
@@ -1417,14 +1477,14 @@
             .then(data => {
                 alert(data.message || 'Question updated successfully');
                 bootstrap.Modal.getInstance(document.getElementById('editQuestionModal')).hide();
-                loadQuestionsForQuiz(currentQuizId);
+                loadQuestionsForQuizInline(currentQuizId);
             })
             .catch(error => {
                 console.error('Error editing question:', error);
                 alert('Error editing question. Please try again.');
             });
         }
-        
+
         function prepareDeleteQuestion(questionId) {
             if (confirm('Are you sure you want to delete this question?')) {
                 fetch(`/admin/delete_question/${questionId}`, {
@@ -1433,14 +1493,114 @@
                 .then(response => response.json())
                 .then(data => {
                     alert(data.message || 'Question deleted successfully');
-                    loadQuestionsForQuiz(currentQuizId);
+                    loadQuestionsForQuizInline(currentQuizId);
                 })
                 .catch(error => {
                     console.error('Error deleting question:', error);
                     alert('Error deleting question. Please try again.');
                 });
             }
-        }    
+        }
+        
+        function deleteMessage(messageId) {
+            if (confirm('Are you sure you want to delete this message?')) {
+                fetch(`/admin/delete_message/${messageId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadMessages();
+                    } else {
+                        alert('Error deleting message: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function deleteAllMessages() {
+            if (confirm('Are you sure you want to delete ALL messages? This cannot be undone!')) {
+                fetch('/admin/delete_all_messages', {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadMessages();
+                    } else {
+                        alert('Error deleting messages: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function loadMessages() {
+            fetch('/admin/contact_messages')
+                .then(response => response.json())
+                .then(data => {
+                    const messagesList = document.getElementById('messages-list');
+                    messagesList.innerHTML = '';
+                    data.forEach((msg, idx) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${idx + 1}</td>
+                            <td>${msg.name}</td>
+                            <td>${msg.email}</td>
+                            <td>${msg.message}</td>
+                            <td>${new Date(msg.sent_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMessage(${msg.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        messagesList.appendChild(row);
+                    });
+                });
+        }
+
+        function openAIGenerateModal(quizId, quizName) {
+            document.getElementById('aiQuizId').value = quizId;
+            document.getElementById('aiQuizName').textContent = quizName;
+            document.getElementById('aiTopic').value = '';
+            document.getElementById('aiCount').value = 1;
+            new bootstrap.Modal(document.getElementById('aiGenerateModal')).show();
+        }
+
+        function generateAIQuestions() {
+            const btn = document.querySelector('#aiGenerateModal .btn-primary');
+            const spinner = btn.querySelector('.spinner-border');
+            btn.disabled = true;
+            spinner.classList.remove('d-none');
+            const payload = {
+                quiz_id: document.getElementById('aiQuizId').value,
+                topic: document.getElementById('aiTopic').value,
+                num_questions: document.getElementById('aiCount').value
+            };
+            fetch('/admin/generate-questions', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Successfully inserted ${data.inserted}/${data.total_generated} questions!`);
+                    loadQuestionsForQuizInline(payload.quiz_id); 
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                spinner.classList.add('d-none');
+                bootstrap.Modal.getInstance(document.getElementById('aiGenerateModal')).hide();
+            });
+        }
+
     </script>
 </body>
 </html>

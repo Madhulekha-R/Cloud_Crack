@@ -102,6 +102,9 @@
         {% else %}
         <h2 class="failed">Better luck next time!</h2>
         {% endif %}
+        <form action="{{ url_for('review_answers', quiz_id=quiz_id) }}">
+            <button type="submit" class="btn btn-warning mt-4">Review the Answers</button>
+        </form>
         <a href="/user_dashboard" class="btn btn-warning mt-4">Back to Dashboard</a>
     </div>
 </div>

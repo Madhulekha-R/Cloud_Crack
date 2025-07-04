@@ -6,6 +6,7 @@
     <title>Edit User Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
             --gradient: linear-gradient(90deg, #00ff94 0%, #00cfff 100%);
@@ -173,6 +174,52 @@
             .form-section h1 { font-size: 1.3rem; }
             .profile-image { width: 90px; height: 90px; }
         }
+        .profile-image-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
+            cursor: pointer;
+        }
+        .profile-image,
+        .default-profile-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00ff94;
+            background: #23242a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.2s;
+        }
+        .profile-image-label:hover .profile-image,
+        .profile-image-label:hover .default-profile-icon {
+            box-shadow: 0 0 0 4px #00cfff55;
+        }
+        .default-profile-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .profile-photo-text {
+            position: absolute;
+            top: 80%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 0.5rem;
+            text-align: center;
+            pointer-events: none;
+            z-index: 2;
+            text-shadow: 0 1px 4px #18191c;
+            width: 100px;
+        }
+
     </style>
 </head>
 <body>
@@ -183,10 +230,16 @@
         <div class="profile-container">
             <div class="overview-section">
                 <label for="profileInput" class="profile-image-label" title="Change profile picture">
-                    <img src="{% if session.profile_pic %}{{ url_for('static', filename='profile_pics/' + session.profile_pic) }}{% else %}https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png{% endif %}" 
-                         alt="Profile Picture" 
-                         class="profile-image"
-                         id="profileImage">
+                    {% if profile_pic %}
+                        <img src="{{ url_for('static', filename='profile_pics/' + profile_pic) }}"
+                            class="profile-image"
+                            id="profileImage"
+                            alt="Profile Photo">
+                    {% else %}
+                        <div class="profile-image default-profile-icon" id="profileImage">
+                            <i class="bi bi-person-circle" style="font-size: 4rem; color: #00ff94;"></i>
+                        </div>
+                    {% endif %} 
                 </label>
                 <input type="file" 
                        id="profileInput" 
@@ -202,8 +255,8 @@
                 <h1 class="mb-4">Edit Your Profile</h1>
                 <form method="POST" action="/user/update_profile" id="profileForm" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="fullName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="fullName" name="full_name" value="{{ full_name }}" required>
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ username }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="qualification" class="form-label">Qualification</label>
@@ -222,17 +275,46 @@
         </div>
     </div>
     <script>
-        // Image preview function
         function previewImage(event) {
             const input = event.target;
             const reader = new FileReader();
             const preview = document.getElementById('profileImage');
             reader.onload = function() {
                 preview.src = reader.result;
-                document.getElementById('profileForm').requestSubmit();
+                uploadProfilePicture();
             };
             if (input.files && input.files[0]) {
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function uploadProfilePicture() {
+            const formData = new FormData();
+            const fileInput = document.getElementById('profileInput');
+            if (fileInput.files[0]) {
+                formData.append('profile_pic', fileInput.files[0]);  
+                fetch('/user/update_profile', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Profile picture updated successfully!');
+                        if (data.profile_pic) {
+                            const img = document.getElementById('profileImage');
+                            img.src = `/static/profile_pics/${data.profile_pic}?${new Date().getTime()}`;
+                        }
+                    } else {
+                        alert('Error updating profile picture: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the profile picture');
+                });
             }
         }
         document.getElementById('profileForm').addEventListener('submit', function(event) {
@@ -248,18 +330,10 @@
             })
             .then(data => {
                 if (data.status === 'success') {
-                    if (data.profile_pic) {
-                        document.getElementById('profileImage').src = 
-                            `/static/profile_pics/${data.profile_pic}?${new Date().getTime()}`;
-                    }
-                    const notification = document.getElementById('updateNotification');
-                    notification.style.display = 'block';
+                    showNotification('Profile updated successfully!');
                     const qualificationText = document.getElementById('qualification').value;
                     document.getElementById('userBio').innerHTML = 
                         `<p>${qualificationText || 'No qualification added yet'}</p>`;
-                    setTimeout(() => {
-                        notification.style.display = 'none';
-                    }, 3000);
                 } else {
                     alert('Error updating profile: ' + (data.message || 'Unknown error'));
                 }
@@ -269,6 +343,14 @@
                 alert('An error occurred while updating the profile');
             });
         });
+        function showNotification(message) {
+            const notification = document.getElementById('updateNotification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
     </script>
 </body>
 </html>
