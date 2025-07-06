@@ -18,5 +18,7 @@ Integrate with your backend to enable all features.
 - Open the HTML files in your browser  
 - Update API endpoints in JS as needed to match your backend
 
+[View the Live Project](https://cloudcrack.onrender.com/)
+
 ## Contact
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/madhulekha-r-4b981b256/)
